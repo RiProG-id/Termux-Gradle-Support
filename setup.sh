@@ -15,10 +15,6 @@ echo "1. Install Android SDK (Version 34.0.4)"
 echo "2. Uninstall Android SDK"
 echo "3. Install JDK (OpenJDK 17)"
 echo "4. Uninstall JDK"
-
-echo "5. Add environment variables (Fix env issue)"
-echo "6. Revert environment variables"
-echo ""
 printf "Select an option [1-5]: "
 read -r option
 echo ""
@@ -83,13 +79,18 @@ case $option in
 	rm -f "$HOME/android-sdk/cmdline-tools.tar.xz"
 	echo "Removed Command-Line Tools archive."
 	echo "All specified archives have been removed."
-	sleep 5
-	echo ""
-echo "Please run 'sdkmanager --licenses' before using Gradle."
-echo "This ensures that all necessary licenses are accepted."
-echo ""
-sleep 5
-exit 0
+	for config_file in "$HOME/.bashrc" "$HOME/.zashrc"; do
+		echo "Inserting environment variables from $config_file..."
+		{
+			echo "export ANDROID_HOME=$HOME/android-sdk"
+			echo "export ANDROID_SDK_ROOT=$HOME/android-sdk"
+			echo "export PATH=\$PATH:\$ANDROID_HOME/cmdline-tools/latest/bin"
+		} >>"$config_file"
+		echo "Environment variables successfully added."
+		echo "Starting the process to remove duplicate lines from $config_file.."
+		awk '!seen[$0]++' "$config_file" >"$config_file.tmp" && mv "$config_file.tmp" "$config_file"
+		echo "Duplicate lines removed successfully from $config_file"
+	done
 	;;
 2)
 	echo "Uninstalling Android SDK..."
@@ -98,8 +99,19 @@ exit 0
 	echo "Removing symbolic link for sdkmanager..."
 	rm -f "$PREFIX/bin/sdkmanager"
 	echo "Removed symbolic link for sdkmanager at $PREFIX/bin/sdkmanager."
-	sleep 5
-	exit 0
+	for config_file in "$HOME/.bashrc" "$HOME/.zashrc"; do
+		echo "Clearing environment variables from $config_file..."
+		if [ -f "$config_file" ]; then
+			sed -i '/^export ANDROID_HOME=/d' "$config_file"
+			sed -i '/^export ANDROID_SDK_ROOT=/d' "$config_file"
+			sed -i '/^export PATH=.*ANDROID_HOME/d' "$config_file"
+			echo "Environment variables have been cleared successfully."
+			if [ ! -s "$config_file" ]; then
+				rm "$config_file"
+				echo "Configuration file is missing. Deleting $config_file..."
+			fi
+		fi
+	done
 	;;
 3)
 	echo "Installing OpenJDK 17..."
@@ -108,7 +120,14 @@ exit 0
 	else
 		echo "Failed to install OpenJDK 17."
 	fi
-	sleep 5
+	for config_file in "$HOME/.bashrc" "$HOME/.zashrc"; do
+		echo "Inserting environment variables from $config_file..."
+		echo "export JAVA_HOME=$PREFIX/lib/jvm/java-17-openjdk" >>"$config_file"
+		echo "Environment variables successfully added."
+		echo "Starting the process to remove duplicate lines from $config_file.."
+		awk '!seen[$0]++' "$config_file" >"$config_file.tmp" && mv "$config_file.tmp" "$config_file"
+		echo "Duplicate lines removed successfully from $config_file"
+	done
 	;;
 4)
 	echo "Uninstalling OpenJDK 17..."
@@ -117,37 +136,9 @@ exit 0
 	else
 		echo "Failed to uninstall OpenJDK 17."
 	fi
-	sleep 5
-	;;
-5)
-	for config_file in "$HOME/.bashrc" "$HOME/.zashrc"; do
-		{
-			echo "export ANDROID_HOME=$HOME/android-sdk"
-			echo "export ANDROID_SDK_ROOT=$HOME/android-sdk"
-			echo "export PATH=\$PATH:\$ANDROID_HOME/cmdline-tools/latest/bin"
-			echo "export JAVA_HOME=$PREFIX/lib/jvm/java-17-openjdk"
-		} >>"$config_file"
-		echo "Environment variables successfully added."
-		echo "Starting the process to remove duplicate lines from $config_file.."
-		awk '!seen[$0]++' "$config_file" >"$config_file.tmp" && mv "$config_file.tmp" "$config_file"
-		echo "Duplicate lines removed successfully from $config_file"
-	done
-	sleep 5
-	echo ""
-	echo "Please close Termux."
-	echo "Reopen it"
-	echo "to reload the environment variables."
-	echo ""
-	sleep 5
-	exit 0
-	;;
-6)
-	for config_file in "$HOME/.bashrc" "$HOME/.zashrc"; do
+	for config_file in "$HOME/.bashrc" "$HOME/.zshrc"; do
 		echo "Clearing environment variables from $config_file..."
 		if [ -f "$config_file" ]; then
-			sed -i '/^export ANDROID_HOME=/d' "$config_file"
-			sed -i '/^export ANDROID_SDK_ROOT=/d' "$config_file"
-			sed -i '/^export PATH=.*ANDROID_HOME/d' "$config_file"
 			sed -i '/^export JAVA_HOME=/d' "$config_file"
 			echo "Environment variables have been cleared successfully."
 			if [ ! -s "$config_file" ]; then
@@ -156,18 +147,19 @@ exit 0
 			fi
 		fi
 	done
-	sleep 5
-	echo ""
-	echo "Please close Termux."
-	echo "Reopen it"
-	echo "to reload the environment variables."
-	echo ""
-	sleep 5
-	exit 0
 	;;
 *)
 	echo "Invalid option. Please select a valid option."
-	sleep 5
 	;;
 esac
+sleep 5
 echo ""
+echo "Please run 'sdkmanager --licenses' before using Gradle."
+echo "This ensures that all necessary enses are accepted."
+echo ""
+sleep 5
+echo "Please close Termux."
+echo "Reopen it to reload the environment variables."
+echo ""
+sleep 5
+exit 0
