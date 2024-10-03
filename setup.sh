@@ -1,6 +1,6 @@
 #!/bin/bash
-pkg update
-pkg upgrade
+pkg update -y
+pkg upgrade -y
 clear
 echo "Termux Gradle Support"
 echo "By RiProG id"
@@ -26,12 +26,10 @@ case $option in
 		echo "Unknown architecture: $arch."
 		exit 1
 	fi
-	echo "Creating Android SDK directory..."
-	mkdir -p "$HOME/android-sdk"
 	echo "Downloading Android SDK..."
-	if curl -L -o "$HOME/android-sdk/android-sdk.tar.xz" "https://github.com/AndroidIDEOfficial/androidide-tools/releases/download/sdk/android-sdk.tar.xz"; then
+	if curl -L -o "$HOME/android-sdk.tar.xz" "https://github.com/AndroidIDEOfficial/androidide-tools/releases/download/sdk/android-sdk.tar.xz"; then
 		echo "Extracting Android SDK..."
-		tar -xf "$HOME/android-sdk/android-sdk.tar.xz" -C "$HOME/android-sdk" && echo "Android SDK extracted."
+		tar -xf "$HOME/android-sdk.tar.xz" -C "$HOME" && echo "Android SDK extracted."
 	else
 		echo "Failed to download Android SDK."
 		exit 1
@@ -70,7 +68,7 @@ case $option in
 	ln -s "$HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager" "$PREFIX/bin/sdkmanager"
 	echo "Symbolic link for sdkmanager created at $PREFIX/bin/sdkmanager."
 	echo "Removing Android SDK tar files..."
-	rm -f "$HOME/android-sdk/android-sdk.tar.xz"
+	rm -f "$HOME/android-sdk.tar.xz"
 	echo "Removed Android SDK archive."
 	rm -f "$HOME/android-sdk/android-sdk-build-tools.tar.xz"
 	echo "Removed Android SDK Build Tools archive."
@@ -152,11 +150,6 @@ case $option in
 	echo "Invalid option. Please select a valid option."
 	;;
 esac
-sleep 5
-echo ""
-echo "Please run 'sdkmanager --licenses' before using Gradle."
-echo "This ensures that all necessary enses are accepted."
-echo ""
 sleep 5
 echo "Please close Termux."
 echo "Reopen it to reload the environment variables."
