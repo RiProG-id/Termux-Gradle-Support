@@ -30,7 +30,8 @@ This setup script allows users to easily install, uninstall, and manage the Andr
    - **2**: Install OpenJDK
    - **3**: Uninstall Android SDK
    - **4**: Uninstall OpenJDK
-   - **5**: Exit the script
+   - **5**: Add Environment Variable
+   - **6**: Revert Environment Variable
 
 ### More Information
 **Author:**
