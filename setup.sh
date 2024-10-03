@@ -84,6 +84,12 @@ case $option in
 	echo "Removed Command-Line Tools archive."
 	echo "All specified archives have been removed."
 	sleep 5
+	echo ""
+echo "Please run 'sdkmanager --licenses' before using Gradle."
+echo "This ensures that all necessary licenses are accepted."
+echo ""
+sleep 5
+exit 0
 	;;
 2)
 	echo "Uninstalling Android SDK..."
@@ -93,6 +99,7 @@ case $option in
 	rm -f "$PREFIX/bin/sdkmanager"
 	echo "Removed symbolic link for sdkmanager at $PREFIX/bin/sdkmanager."
 	sleep 5
+	exit 0
 	;;
 3)
 	echo "Installing OpenJDK 17..."
