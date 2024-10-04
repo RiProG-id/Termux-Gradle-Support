@@ -26,12 +26,8 @@ This setup script allows users to easily install, uninstall, and manage the Andr
 
 5. Follow the on-screen instructions to select an option:
 
-   - **1**: Install Android SDK
-   - **2**: Install OpenJDK
-   - **3**: Uninstall Android SDK
-   - **4**: Uninstall OpenJDK
-   - **5**: Add Environment Variable
-   - **6**: Revert Environment Variable
+   - **1**: Install
+   - **2**: Uninstall
 
 ### More Information
 **Author:**

@@ -10,12 +10,13 @@ if ! echo "$PREFIX" | grep -q termux; then
 	exit 1
 fi
 echo ""
+echo "Android SDK: 34.0.4"
+echo "OpenJDK 17"
+echo ""
 echo "Menu:"
-echo "1. Install Android SDK (Version 34.0.4)"
-echo "2. Uninstall Android SDK"
-echo "3. Install JDK (OpenJDK 17)"
-echo "4. Uninstall JDK"
-printf "Select an option [1-5]: "
+echo "1. Install"
+echo "2. Uninstall"
+printf "Select an option [1-2]: "
 read -r option
 echo ""
 case $option in
@@ -65,8 +66,6 @@ case $option in
 		echo "Failed to download Command-Line Tools."
 		exit 1
 	fi
-	ln -s "$HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager" "$PREFIX/bin/sdkmanager"
-	echo "Symbolic link for sdkmanager created at $PREFIX/bin/sdkmanager."
 	echo "Removing Android SDK tar files..."
 	rm -f "$HOME/android-sdk.tar.xz"
 	echo "Removed Android SDK archive."
@@ -77,12 +76,19 @@ case $option in
 	rm -f "$HOME/android-sdk/cmdline-tools.tar.xz"
 	echo "Removed Command-Line Tools archive."
 	echo "All specified archives have been removed."
+	echo "Installing OpenJDK 17..."
+	pkg install openjdk-17 -y
+	echo "OpenJDK 17 installed successfully."
+	echo "Starting SDK Manager update..."
+	$HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager --update
+	echo "SDK Manager update completed."
 	for config_file in "$HOME/.bashrc" "$HOME/.zashrc"; do
 		echo "Inserting environment variables from $config_file..."
 		{
 			echo "export ANDROID_HOME=$HOME/android-sdk"
 			echo "export ANDROID_SDK_ROOT=$HOME/android-sdk"
 			echo "export PATH=\$PATH:\$ANDROID_HOME/cmdline-tools/latest/bin"
+			echo "export JAVA_HOME=$PREFIX/lib/jvm/java-17-openjdk"
 		} >>"$config_file"
 		echo "Environment variables successfully added."
 		echo "Starting the process to remove duplicate lines from $config_file.."
@@ -94,49 +100,15 @@ case $option in
 	echo "Uninstalling Android SDK..."
 	rm -rf "$HOME/android-sdk"
 	echo "Failed to uninstall Android SDK."
-	echo "Removing symbolic link for sdkmanager..."
-	rm -f "$PREFIX/bin/sdkmanager"
-	echo "Removed symbolic link for sdkmanager at $PREFIX/bin/sdkmanager."
+	echo "Uninstalling OpenJDK 17..."
+	pkg uninstall openjdk-17 --purge -y
+	echo "OpenJDK 17 uninstalled successfully."
 	for config_file in "$HOME/.bashrc" "$HOME/.zashrc"; do
 		echo "Clearing environment variables from $config_file..."
 		if [ -f "$config_file" ]; then
 			sed -i '/^export ANDROID_HOME=/d' "$config_file"
 			sed -i '/^export ANDROID_SDK_ROOT=/d' "$config_file"
 			sed -i '/^export PATH=.*ANDROID_HOME/d' "$config_file"
-			echo "Environment variables have been cleared successfully."
-			if [ ! -s "$config_file" ]; then
-				rm "$config_file"
-				echo "Configuration file is missing. Deleting $config_file..."
-			fi
-		fi
-	done
-	;;
-3)
-	echo "Installing OpenJDK 17..."
-	if pkg install openjdk-17 -y; then
-		echo "OpenJDK 17 installed successfully."
-	else
-		echo "Failed to install OpenJDK 17."
-	fi
-	for config_file in "$HOME/.bashrc" "$HOME/.zashrc"; do
-		echo "Inserting environment variables from $config_file..."
-		echo "export JAVA_HOME=$PREFIX/lib/jvm/java-17-openjdk" >>"$config_file"
-		echo "Environment variables successfully added."
-		echo "Starting the process to remove duplicate lines from $config_file.."
-		awk '!seen[$0]++' "$config_file" >"$config_file.tmp" && mv "$config_file.tmp" "$config_file"
-		echo "Duplicate lines removed successfully from $config_file"
-	done
-	;;
-4)
-	echo "Uninstalling OpenJDK 17..."
-	if pkg uninstall openjdk-17 -y; then
-		echo "OpenJDK 17 uninstalled successfully."
-	else
-		echo "Failed to uninstall OpenJDK 17."
-	fi
-	for config_file in "$HOME/.bashrc" "$HOME/.zshrc"; do
-		echo "Clearing environment variables from $config_file..."
-		if [ -f "$config_file" ]; then
 			sed -i '/^export JAVA_HOME=/d' "$config_file"
 			echo "Environment variables have been cleared successfully."
 			if [ ! -s "$config_file" ]; then
