@@ -89,6 +89,7 @@ case $option in
 			echo "export ANDROID_SDK_ROOT=$HOME/android-sdk"
 			echo "export PATH=\$PATH:\$ANDROID_HOME/cmdline-tools/latest/bin"
 			echo "export JAVA_HOME=$PREFIX/lib/jvm/java-17-openjdk"
+			echo "export GRADLE_USER_HOME=$HOME/.gradle"
 		} >>"$config_file"
 		echo "Environment variables successfully added."
 		echo "Starting the process to remove duplicate lines from $config_file.."
@@ -110,12 +111,16 @@ case $option in
 			sed -i '/^export ANDROID_SDK_ROOT=/d' "$config_file"
 			sed -i '/^export PATH=.*ANDROID_HOME/d' "$config_file"
 			sed -i '/^export JAVA_HOME=/d' "$config_file"
+			sed -i '/^export GRADLE_USER_HOME=/d' "$config_file"
 			echo "Environment variables have been cleared successfully."
 			if [ ! -s "$config_file" ]; then
 				rm "$config_file"
 				echo "Configuration file is missing. Deleting $config_file..."
 			fi
 		fi
+		echo "Deleting Gradle cache directory..."
+		rm -rf "$HOME/.gradle"
+		echo "Gradle cache directory has been deleted."
 	done
 	;;
 *)
